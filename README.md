@@ -126,29 +126,34 @@ git:
 
 export CONFIG_PATH=./configs/settings.yaml
 
+---
 
 
-
-### Environment setup:
+## Environment setup:
 
 git clone https://github.com/<your-username>/Rag_application.git
 cd Rag_application
 
-# Create environment
+---
+
+## Create environment
 python3 -m venv .venv
 source .venv/bin/activate
+---
 
-# Install dependencies
+## Install dependencies
 pip install -r requirements.txt
+---
 
-# Copy env template
+## Copy env template
 cp .env.example .env
+---
 
-### Run
+## Run
 streamlit run app/ui/app.py
+---
 
-
-#### Ollama services
+## Ollama services
 
 ollama serve
 
@@ -156,4 +161,12 @@ ollama pull llama3.2:1b
 ollama pull tinyllama:1.1b
 ollama pull deepseek-coder:6.7b-instruct
 ollama pull nomic-embed-text
+---
+
+## UI
+
+<img width="1912" height="947" alt="Screenshot 2025-11-04 at 8 09 59 PM" src="https://github.com/user-attachments/assets/c48e177d-efda-4ef2-ad93-3ef07045d3a4" />
+
+---
+
 
