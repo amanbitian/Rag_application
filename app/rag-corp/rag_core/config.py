@@ -30,18 +30,15 @@ def _candidate_paths() -> list[Path]:
     ]
 
 def load_settings(path: str | None = None) -> Settings:
-    #  Locate the config file
     candidates = _candidate_paths()
     cfg_path = Path(path).expanduser() if path else next((p for p in candidates if p and p.is_file()), None)
     if not cfg_path:
         tried = "\n".join(str(p) for p in candidates)
         raise FileNotFoundError(f"settings.yaml not found. Tried:\n{tried}")
 
-    # Load YAML safely
     with open(cfg_path, "r") as f:
         data = yaml.safe_load(f)
 
-    #⃣ Return dataclass instance
     return Settings(
         env=data.get("env", "dev"),
         data_dir=data.get("data_dir", "data"),
