@@ -11,3 +11,6 @@ cmd = ["streamlit", "run", "ui/app.py"]
 
 print("🚀 Launching RAG Corp App...\n")
 subprocess.run(cmd, check=True)
+
+
+### Working model for test pulled from dev on 4th nov
