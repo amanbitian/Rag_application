@@ -165,7 +165,8 @@ ollama pull nomic-embed-text
 
 ## UI
 
-<img width="1912" height="947" alt="Screenshot 2025-11-04 at 8 09 59 PM" src="https://github.com/user-attachments/assets/c48e177d-efda-4ef2-ad93-3ef07045d3a4" />
+<img width="3840" height="4098" alt="RAG-Corp-Robust--11-04-2025_08_13_PM" src="https://github.com/user-attachments/assets/b7688c33-88d1-4f7f-9afc-b96c7624b438" />
+
 
 ---
 
