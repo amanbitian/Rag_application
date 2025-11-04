@@ -1,6 +1,7 @@
 import streamlit as st
 import logging, traceback
-
+import time
+from rag_core.llm.ollama_utils import list_ollama_models
 from rag_core.logging_conf import setup_logging
 from rag_core.config import load_settings
 from rag_core.embeddings.embeddings import get_embedder
@@ -24,9 +25,30 @@ except Exception as e:
 
 with st.sidebar:
     st.subheader("Models")
-    embed_pref = st.text_input("Embedding (preferred via Ollama)", cfg.embed_model)
-    llm_model = st.text_input("LLM (Ollama)", cfg.llm_model)
-    st.caption("If Ollama embeddings fail, we auto-fallback to HF (all-MiniLM-L6-v2).")
+
+    # Discover models from Ollama (cached)
+    @st.cache_data(ttl=60)
+    def _models(base):
+        return list_ollama_models(base)
+
+    available = _models(cfg.ollama_base_url)
+
+    embed_pref = st.selectbox(
+        "Embedding model (preferred via Ollama; auto-fallback to HF if needed)",
+        options=["bge-m3", "nomic-embed-text", "all-MiniLM-L6-v2"], index=0
+    )
+
+    llm_choices = st.multiselect(
+        "LLMs for comparison (select 1–4)",
+        options=available,
+        default=[m for m in available if m.startswith("llama3")][:1] or available[:1],
+        max_selections=4
+    )
+
+    temp = st.slider("Temperature", 0.0, 1.5, 0.2, 0.1)
+    seed = st.number_input("Seed", value=42, step=1)
+
+    st.caption("Tip: Keep 1–4 models for a fair, fast comparison.")
 
 mode = st.radio("Source Type", ["📄 PDF", "💻 GitHub Repo"], horizontal=True)
 docs = None
@@ -56,21 +78,45 @@ except Exception as e:
         st.code("".join(traceback.format_exc()))
     st.stop()
 
+# Q&A multi-model comparison
 if st.session_state.get("index_ready"):
-    q = st.text_input("Ask a question")
+    q = st.text_input("Ask a question", key="qq")
     if q:
         try:
             embedder = get_embedder(embed_pref, cfg.ollama_base_url)
             vs = FAISS.load_local(cfg.index_dir, embedder, allow_dangerous_deserialization=True)
-            llm = get_llm(llm_model, cfg.ollama_base_url)
-            from rag_core.rag_service import build_qa_chain, answer
-            qa = build_qa_chain(vs, llm, cfg.retriever_k)
-            with st.spinner("Thinking…"):
-                ans = answer(qa, q)
-            st.markdown("### 🧠 Answer")
-            st.write(ans)
         except Exception as e:
-            logger.exception("QA failure.")
-            st.error(f"QA failed: {e}")
-            with st.expander("Details"):
-                st.code("".join(traceback.format_exc()))
+            st.error(f"Failed to load vector index: {e}")
+            st.stop()
+
+        if not llm_choices:
+            st.warning("Select at least one LLM from the sidebar.")
+            st.stop()
+
+        st.markdown("### 🧪 Model Comparison")
+        cols = st.columns(len(llm_choices))
+        results = []
+
+        from rag_core.rag_service import build_qa_chain, answer
+
+        for i, model_name in enumerate(llm_choices):
+            with cols[i]:
+                try:
+                    llm = get_llm(model_name, cfg.ollama_base_url) #, temperature=temp, seed=seed)
+                    qa = build_qa_chain(vs, llm, cfg.retriever_k)
+                    t0 = time.perf_counter()
+                    ans = answer(qa, q)
+                    dt = time.perf_counter() - t0
+                    results.append({"model": model_name, "answer": ans, "latency": dt, "error": None})
+                except Exception as e:
+                    results.append({"model": model_name, "answer": "", "latency": None, "error": str(e)})
+
+        for r in results:
+            with st.container(border=True):
+                st.markdown(f"#### 🧠 {r['model']}")
+                if r["error"]:
+                    st.error(f"Error: {r['error']}")
+                    continue
+                st.markdown(f"**Latency:** {r['latency']:.2f}s")
+                st.write(r["answer"])
+
