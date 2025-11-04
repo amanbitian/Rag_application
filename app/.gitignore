@@ -1,0 +1,53 @@
+# === Python ===
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+
+# === Environments ===
+.venv/
+env/
+venv/
+ENV/
+*.env
+.env.*
+
+# === IDEs ===
+.vscode/
+.idea/
+*.iml
+
+# === OS files ===
+.DS_Store
+Thumbs.db
+
+# === Data / Index / Cache ===
+data/
+index/
+*.faiss
+*.pkl
+*.bin
+*.npy
+
+# === Logs ===
+*.log
+
+# === Streamlit cache ===
+.streamlit/
+.cache/
+
+# === Build / Docker ===
+build/
+dist/
+__pycache__/
+*.egg-info/
+Dockerfile
+docker-compose.yaml
+Makefile
+
+# === Secrets ===
+.env
+.env.example
+configs/settings.yaml

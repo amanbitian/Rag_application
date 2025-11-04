@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+
+[project]
+name = "rag_application"
+version = "0.1.0"
+description = "Corporate-grade RAG system for PDF & GitHub document QA"
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+where = ["app/rag-corp"]
